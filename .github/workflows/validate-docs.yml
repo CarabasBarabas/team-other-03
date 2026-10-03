@@ -1,0 +1,137 @@
+name: Валидация артефактов практики
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Проверка документов
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # Профиль проверки. В эталоне документы содержат заготовки {{ ... }}, и
+    # профиль template требует их наличия, а профиль team требует заполнения.
+    # Один и тот же файл лежит и в эталоне, и в репозиториях команд, поэтому
+    # профиль задаётся переменной репозитория: в эталоне VALIDATION_PROFILE=template,
+    # в репозиториях команд переменной нет и остаётся team.
+    env:
+      PROFILE: ${{ vars.VALIDATION_PROFILE || 'team' }}
+
+    steps:
+      - name: Получить код
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # Проверка требует заполненных документов, а состав меняется автоматически
+      # через data/meta.yml. Защита ветки справедлива к ветке, а не к файлу, и
+      # первая же замена состава упиралась бы в заготовки {{ ... }}: команда
+      # ещё не написала ни одного документа, а смена капитана уже пришла. Если
+      # запрос трогает только data/, документы не менялись и проверять их не на
+      # что — остаётся проверить метаданные. Любое изменение вне data/ идёт
+      # полной проверкой, поэтому подставные документы по-прежнему не попадут
+      # в main.
+      - name: Определить круг проверки
+        id: scope
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          changed=""
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            changed="$(git diff --name-only "origin/main...HEAD" || true)"
+          else
+            # Пуш в main — это результат слитого запроса, и состав изменений
+            # виден между прежней головой ветки и новой. Проверять документы
+            # полностью после слияния, где их не трогали, значило бы оставить
+            # на main красную галочку у команды, чьи документы ещё пусты.
+            if [ -n "${BEFORE}" ] && [ "${BEFORE}" != "0000000000000000000000000000000000000000" ]; then
+              changed="$(git diff --name-only "${BEFORE}" HEAD 2>/dev/null || true)"
+            fi
+            if [ -z "${changed}" ]; then
+              changed="$(git diff --name-only HEAD^ HEAD 2>/dev/null || true)"
+            fi
+          fi
+          if [ -z "${changed}" ]; then
+            echo "value=full" >> "$GITHUB_OUTPUT"
+            echo "не удалось определить состав изменений, проверяем всё" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          if printf '%s\n' "${changed}" | grep -qv '^data/'; then
+            echo "value=full" >> "$GITHUB_OUTPUT"
+            {
+              echo "изменены файлы за пределами data/:"
+              printf '%s\n' "${changed}"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          echo "value=meta" >> "$GITHUB_OUTPUT"
+          {
+            echo "изменён только data/, проверяем метаданные:"
+            printf '%s\n' "${changed}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Установить Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Установить зависимости проверки
+        run: python -m pip install --disable-pip-version-check "pyyaml==6.0.3" "jsonschema==4.26.0"
+
+      - name: Проверить обязательные файлы, секции и заготовки
+        if: steps.scope.outputs.value == 'full'
+        run: python scripts/validate_docs.py --root . --profile "$PROFILE" --ci
+
+      - name: Проверить метаданные команды
+        run: |
+          python - <<'PY'
+          import os
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, "scripts")
+          from validate_docs import validate
+
+          report = validate(Path(".").resolve(), os.environ.get("PROFILE", "team"))
+          meta_findings = [f for f in report.findings if f.path == "data/meta.yml"]
+          if not meta_findings:
+              print("метаданные команды корректны")
+          for finding in meta_findings:
+              print(f"::error file=data/meta.yml,title={finding.code}::{finding.message}")
+          sys.exit(1 if any(f.level == "error" for f in meta_findings) else 0)
+          PY
+
+      - name: Отчёт о состоянии команды
+        if: always()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          stages = [
+              ("01_Идея", "docs/01_problem.md"),
+              ("02_AS-IS_Анализ", "docs/02_asis_analysis.md"),
+              ("03_TO-BE_Human-In-The-Loop", "docs/03_tobe_architecture.md"),
+              ("04_Формализация_ТЗ", "docs/04_requirements.md"),
+          ]
+          reached = "01_Идея"
+          for title, relative in stages:
+              if Path(relative).is_file():
+                  reached = title
+          print(f"Фактический этап по наличию артефактов: {reached}")
+          PY
+
+      - name: Сводка в Summary
+        if: always() && steps.scope.outputs.value == 'full'
+        run: |
+          python scripts/validate_docs.py --root . --profile "$PROFILE" >> "$GITHUB_STEP_SUMMARY" || true

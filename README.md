@@ -10,7 +10,7 @@
 
 **Группа:** 26.М01-нето-пу
 
-**Репозиторий:** [<ссылка>](https://github.com/CarabasBarabas/team-other-03)
+**Репозиторий:** https://github.com/hrtech2026/team-other-03
 
 **Текущий этап:** 02_AS-IS_Анализ
 

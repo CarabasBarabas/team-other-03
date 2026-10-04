@@ -58,7 +58,7 @@ authors:
 |---|---|---|---|---|
 | Доля сотрудников, верящих в анонимность | % | ≤ 30 | https://cdn.sogolytics.com/blog/wp-content/uploads/2024/09/Employee_Engagement_SogoStudy.pdf#1#1 | ≥ 50 |
 | Доля социально желательных ответов в exit-интервью | % | ≥ 50 | https://www.intoo.com/wp-content/uploads/sites/2/2024/04/INTOO_FWOW_2024.pdf#2#2 | ≤ 30 |
-| Доля конкретных free-text комментариев к рейтинговым вопросам | % | ~6 | (https://www.cultureamp.com/blog/employee-survey-comments?utm_source=www.strictlyinternal.com&utm_medium=referral&utm_campaign=strictly-internal-issue-19 | ≥ 15 |
+| Доля конкретных free-text комментариев к рейтинговым вопросам | % | ~6 | https://www.cultureamp.com/blog/employee-survey-comments?utm_source=www.strictlyinternal.com&utm_medium=referral&utm_campaign=strictly-internal-issue-19 | ≥ 15 |
 | Повторяемость одних и тех же проблем от опроса к опросу | % | ≥ 60 | https://cits.wa.gov.au/docs/default-source/local-government/inquiries/city-of-perth/copi_volume-4_redacted.pdf?sfvrsn=56d195e7_3#100#94 | ≤ 30 |
 | Время от сигнала до видимого изменения | месяцев | ≥ 6 | https://happily.ai/blog/engagement-data-timing-problem/?ref=happily.ai/blog | ≤ 3 |
 

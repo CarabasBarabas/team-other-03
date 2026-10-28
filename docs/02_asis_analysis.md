@@ -2,7 +2,7 @@
 doc: 02_asis_analysis
 stage: as_is
 team: Trust Pulse
-updated: 2026-10-04
+updated: 2026-10-28
 authors:
   - '@CarabasBarabas'
   - '@nkrivenckova2018-commits'
@@ -70,7 +70,7 @@ flowchart TD
 | Доля социально желательных ответов в exit-интервью — более 50% | https://www.intoo.com/wp-content/uploads/sites/2/2024/04/INTOO_FWOW_2024.pdf#2#2 | Документ | Анализ отчета |
 | Доля конкретных free-text комментариев — менее 15% | https://www.cultureamp.com/blog/employee-survey-comments?utm_source=www.strictlyinternal.com&utm_medium=referral&utm_campaign=strictly-internal-issue-19 | Документ | Анализ отчета |
 | Повторяемость одних и тех же проблем — более 60% | https://cits.wa.gov.au/docs/default-source/local-government/inquiries/city-of-perth/copi_volume-4_redacted.pdf?sfvrsn=56d195e7_3#100#94 | Документ | Анализ отчета |
-| Время от сигнала до видимого изменения — более 6 месяцев | https://happily.ai/blog/engagement-data-timing-problem/?ref=happily.ai/blog	 | Документ | Анализ отчета |
+| Время от получения сигнала о проблеме до видимого изменения — более 6 месяцев | https://happily.ai/blog/engagement-data-timing-problem/?ref=happily.ai/blog	 | Документ | Анализ отчета |
 
 ## Обнаруженные проблемы
 
